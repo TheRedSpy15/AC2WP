@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     public void revert(View view) {
 
         if (((BitmapDrawable) getCurrentWallpaper()).getBitmap() != originalWallpaper) {
+
             changeWallpaper(originalWallpaper);
             TastyToast.makeText(this,"Reverted",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
         } else TastyToast.makeText(this,"Original is already applied",TastyToast.LENGTH_LONG,TastyToast.ERROR).show();
@@ -94,12 +95,9 @@ public class MainActivity extends AppCompatActivity {
         final ImageView imageView = new ImageView(this);
 
         imageView.setImageBitmap(ALBUM_COVER);
-        imageView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                TastyToast.makeText(MainActivity.this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
-                changeWallpaper(ALBUM_COVER);
-            }
+        imageView.setOnClickListener(view -> {
+            TastyToast.makeText(MainActivity.this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+            changeWallpaper(ALBUM_COVER);
         });
 
         albums.addView(imageView);
