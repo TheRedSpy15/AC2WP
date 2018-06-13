@@ -59,7 +59,7 @@
         android:layout_width="239dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="@string/simply_tap_on_an_image_and_it_will_be_applied_to_your_wallpaper_note_no_images_will_be_shown_if_you_have_no_songs_with_an_album_cover"
+        android:text="@string/instructions_description"
         app:layout_constraintEnd_toEndOf="@+id/textView2"
         app:layout_constraintStart_toStartOf="@+id/textView2"
         app:layout_constraintTop_toBottomOf="@+id/textView2" />

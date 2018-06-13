@@ -65,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (((BitmapDrawable) getCurrentWallpaper()).getBitmap() != originalWallpaper) {
 
+            TastyToast.makeText(this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
             new Thread(() -> changeWallpaper(originalWallpaper)).start();
         } else TastyToast.makeText(this,"Original is already applied",TastyToast.LENGTH_LONG,TastyToast.ERROR).show();
     }
@@ -95,7 +96,10 @@ public class MainActivity extends AppCompatActivity {
         final ImageView imageView = new ImageView(this);
 
         imageView.setImageBitmap(ALBUM_COVER);
-        imageView.setOnClickListener(view -> new Thread(() -> changeWallpaper(ALBUM_COVER)).start());
+        imageView.setOnClickListener(view -> {
+            TastyToast.makeText(this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+            new Thread(() -> changeWallpaper(ALBUM_COVER)).start();
+        });
 
         albums.addView(imageView);
     }
@@ -113,8 +117,6 @@ public class MainActivity extends AppCompatActivity {
     private void changeWallpaper(Bitmap bitmap) {
 
         Looper.prepare();
-
-        TastyToast.makeText(this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
 
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
         try {
