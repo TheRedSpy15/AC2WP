@@ -12,6 +12,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Looper;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -64,8 +65,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (((BitmapDrawable) getCurrentWallpaper()).getBitmap() != originalWallpaper) {
 
-            changeWallpaper(originalWallpaper);
-            TastyToast.makeText(this,"Reverted",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+            new Thread(() -> changeWallpaper(originalWallpaper)).start();
         } else TastyToast.makeText(this,"Original is already applied",TastyToast.LENGTH_LONG,TastyToast.ERROR).show();
     }
 
@@ -95,10 +95,7 @@ public class MainActivity extends AppCompatActivity {
         final ImageView imageView = new ImageView(this);
 
         imageView.setImageBitmap(ALBUM_COVER);
-        imageView.setOnClickListener(view -> {
-            TastyToast.makeText(MainActivity.this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
-            changeWallpaper(ALBUM_COVER);
-        });
+        imageView.setOnClickListener(view -> new Thread(() -> changeWallpaper(ALBUM_COVER)).start());
 
         albums.addView(imageView);
     }
@@ -115,12 +112,20 @@ public class MainActivity extends AppCompatActivity {
 
     private void changeWallpaper(Bitmap bitmap) {
 
+        Looper.prepare();
+
+        TastyToast.makeText(this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+
         WallpaperManager wallpaperManager = WallpaperManager.getInstance(this);
         try {
             wallpaperManager.setBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        TastyToast.makeText(this,"Done",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+
+        Looper.loop();
     }
 
     private Drawable getCurrentWallpaper() {
