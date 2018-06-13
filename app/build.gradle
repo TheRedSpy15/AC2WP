@@ -6,8 +6,8 @@ android {
         applicationId "theredspy15.ac2wp"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 3
-        versionName "1.2"
+        versionCode 4
+        versionName "1.4"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
