@@ -2,6 +2,7 @@
     <string name="app_name">AC2WP</string>
     <string name="album_cover_2_wallpaper">Album Cover 2 Wallpaper</string>
     <string name="instructions">Instructions</string>
-    <string name="instructions_description">Simply tap on an image and it will be applied to your wallpaper. NOTE: No images will be shown if you have no songs with an album cover!</string>
+    <string name="instructions_description">Simply tap on an image and it will be applied to your wallpaper. WARNING: No images will be shown if you have no songs with an album cover!</string>
     <string name="revert">Revert</string>
+    <string name="holding_down_on_a_cover_will_save_it">Holding down on a cover, will save it!</string>
 </resources>
