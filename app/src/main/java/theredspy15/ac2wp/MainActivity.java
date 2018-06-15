@@ -19,7 +19,6 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -166,7 +165,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         String fileName = "Image-" + image_name+ ".jpg";
         File file = new File(myDir, fileName);
         if (file.exists()) file.delete();
-        Log.i("LOAD", root + fileName);
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             finalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
