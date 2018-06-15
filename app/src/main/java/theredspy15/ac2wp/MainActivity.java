@@ -158,6 +158,8 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         Looper.prepare();
 
+        image_name = image_name.replace("/","\\");
+
         String root = Environment.getExternalStorageDirectory().toString();
         File myDir = new File(root);
         myDir.mkdirs();
