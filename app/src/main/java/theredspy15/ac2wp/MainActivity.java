@@ -25,8 +25,6 @@ import android.widget.LinearLayout;
 
 import com.sdsmdg.tastytoast.TastyToast;
 
-import net.alhazmy13.catcho.library.Catcho;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,10 +52,6 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Catcho.Builder(this)
-                .recipients("hjadar15@protonmail.com")
-                .build();
-
         albums = findViewById(R.id.albumView);
         originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
 
@@ -81,9 +75,9 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         TastyToast.makeText(this,"Scanning",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
 
-        ContentResolver cr = this.getContentResolver();
+        ContentResolver resolver = this.getContentResolver();
 
-        Cursor cursor = cr.query(BASE_URI, BASE_PROJECTION, BASE_SELECTION, null, BASE_SORTORDER);
+        Cursor cursor = resolver.query(BASE_URI, BASE_PROJECTION, BASE_SELECTION, null, BASE_SORTORDER);
         int count;
 
         if (cursor != null) {
@@ -122,12 +116,12 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     private Bitmap getAlbumCover(Long album_id) throws FileNotFoundException {
 
-        Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
-        Uri uri = ContentUris.withAppendedId(sArtworkUri, album_id);
-        ContentResolver res = MainActivity.this.getContentResolver();
-        InputStream in = res.openInputStream(uri);
+        Uri artworkUri = Uri.parse("content://media/external/audio/albumart");
+        Uri uri = ContentUris.withAppendedId(artworkUri, album_id);
+        ContentResolver resolver = MainActivity.this.getContentResolver();
+        InputStream inputStream = resolver.openInputStream(uri);
 
-        return BitmapFactory.decodeStream(in);
+        return BitmapFactory.decodeStream(inputStream);
     }
 
     private void changeWallpaper(Bitmap bitmap) {
@@ -153,21 +147,21 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         return wallpaperManager.getDrawable();
     }
 
-    private void saveCover(Bitmap finalBitmap, String image_name) {
+    private void saveCover(Bitmap bitmap, String imageName) {
 
         Looper.prepare();
 
-        image_name = image_name.replace("/","\\");
+        imageName = imageName.replace("/","\\");
 
         String root = Environment.getExternalStorageDirectory().toString();
-        File myDir = new File(root);
-        myDir.mkdirs();
-        String fileName = "Image-" + image_name+ ".jpg";
-        File file = new File(myDir, fileName);
+        File directory = new File(root);
+        directory.mkdirs();
+        String fileName = "Image-" + imageName + ".jpg";
+        File file = new File(directory, fileName);
         if (file.exists()) file.delete();
         try {
             FileOutputStream fileOutputStream = new FileOutputStream(file);
-            finalBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
             fileOutputStream.flush();
             fileOutputStream.close();
         } catch (Exception e) {
