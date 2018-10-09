@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AC2WP</string>
+    <string name="album_cover_2_wallpaper">Couverture de l\'album au papier peint</string>
+    <string name="instructions">Instructions</string>
+    <string name="instructions_description">Tapez simplement sur une image et elle sera appliquée à votre fond d\'écran. AVERTISSEMENT: Aucune image ne sera affichée si vous n\'avez pas de chansons avec une couverture d\'album!</string>
+    <string name="revert">Revenir</string>
+    <string name="holding_down_on_a_cover_will_save_it">Tenir sur une couverture, le sauvera!</string>
+</resources>
