@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AC2WP</string>
+    <string name="album_cover_2_wallpaper">앨범 표지 2 바탕 화면</string>
+    <string name="instructions">명령</string>
+    <string name="instructions_description">단순히 이미지를 탭하면 배경 화면에 적용됩니다. 경고 : 앨범 표지가있는 노래가 없으면 이미지가 표시되지 않습니다!</string>
+    <string name="revert">돌아가는 것</string>
+    <string name="holding_down_on_a_cover_will_save_it">표지를 누르고 있으면 그것을 구할 수 있습니다!</string>
+</resources>
