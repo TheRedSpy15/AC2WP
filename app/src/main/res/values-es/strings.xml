@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AC2WP</string>
+    <string name="album_cover_2_wallpaper">Cubierta del álbum al fondo de pantalla</string>
+    <string name="instructions">Instrucciones</string>
+    <string name="instructions_description">Simplemente toca una imagen y se aplicará a tu fondo de pantalla. ADVERTENCIA: ¡No se mostrarán imágenes si no tiene canciones con una portada de álbum!</string>
+    <string name="revert">Revertir</string>
+    <string name="holding_down_on_a_cover_will_save_it">¡Manteniéndolo sobre una tapa, lo salvará!</string>
+</resources>
