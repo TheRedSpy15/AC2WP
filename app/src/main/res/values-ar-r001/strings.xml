@@ -1,8 +1,0 @@
-<resources>
-    <string name="app_name">AC2WP</string>
-    <string name="album_cover_2_wallpaper">غلاف الألبوم للجدران</string>
-    <string name="instructions">تعليمات</string>
-    <string name="instructions_description">ما عليك سوى النقر على الصورة وسيتم تطبيقها على ورق الحائط الخاص بك. تحذير: لن يتم عرض أي صور إذا لم يكن لديك أي أغان بها غلاف ألبوم!</string>
-    <string name="revert">العودة</string>
-    <string name="holding_down_on_a_cover_will_save_it">الضغط على الغطاء ، سيوفره!</string>
-</resources>

@@ -15,14 +15,19 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+import com.google.android.gms.ads.initialization.InitializationStatus;
+import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
 import com.sdsmdg.tastytoast.TastyToast;
 
 import java.io.File;
@@ -32,6 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
+
+    private AdView mAdView;
 
     private static final int PERMISSIONS_REQUEST_CODE = 1;
 
@@ -52,14 +59,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        albums = findViewById(R.id.albumView);
-        originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
-
         try {
             requestPermissions();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+
+        MobileAds.initialize(this, initializationStatus -> {});
+        mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+
+        albums = findViewById(R.id.albumView);
+        originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
     }
 
     public void revert(View view) {
@@ -188,18 +200,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[], @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_CODE:
-                if (grantResults.length > 0 // Granted
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    try {
-                        addAlbumCovers();
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                } else System.exit(0); // Permission denied
-                break;
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length > 0 // Granted
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                try {
+                    addAlbumCovers();
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            } else System.exit(0); // Permission denied
         }
     }
 }
