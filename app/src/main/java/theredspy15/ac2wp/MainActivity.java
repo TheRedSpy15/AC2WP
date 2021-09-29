@@ -2,45 +2,33 @@ package theredspy15.ac2wp;
 
 import android.Manifest;
 import android.app.WallpaperManager;
-import android.content.ContentResolver;
 import android.content.ContentUris;
-import android.content.pm.PackageManager;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
-import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.appcompat.app.AppCompatActivity;
+import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.ads.initialization.InitializationStatus;
-import com.google.android.gms.ads.initialization.OnInitializationCompleteListener;
-import com.sdsmdg.tastytoast.TastyToast;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+
+import theredspy15.ac2wp.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity implements ActivityCompat.OnRequestPermissionsResultCallback {
-
-    private AdView mAdView;
-
-    private static final int PERMISSIONS_REQUEST_CODE = 1;
 
     protected static final String[] BASE_PROJECTION = new String[]{
             MediaStore.Audio.AudioColumns.ALBUM_ID,
@@ -50,27 +38,23 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     final String BASE_SELECTION = MediaStore.Audio.Media.IS_MUSIC + "!= 0";
     final String BASE_SORTORDER = MediaStore.Audio.Media.TITLE + " ASC";
 
-    LinearLayout albums;
-
     Bitmap originalWallpaper;
+
+    ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        try {
-            requestPermissions();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
-        MobileAds.initialize(this, initializationStatus -> {});
-        mAdView = findViewById(R.id.adView);
-        AdRequest adRequest = new AdRequest.Builder().build();
-        mAdView.loadAd(adRequest);
+        binding.revertButton.setOnClickListener(this::revert);
 
-        albums = findViewById(R.id.albumView);
+        requestWriteExternalPermission();
+        addAlbumCovers(); // TODO: move this!
+
         originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
     }
 
@@ -78,18 +62,16 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         if (((BitmapDrawable) getCurrentWallpaper()).getBitmap() != originalWallpaper) {
 
-            TastyToast.makeText(this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+            Toast.makeText(this,"Changing",Toast.LENGTH_SHORT).show();
             new Thread(() -> changeWallpaper(originalWallpaper)).start();
-        } else TastyToast.makeText(this,"Original is already applied",TastyToast.LENGTH_LONG,TastyToast.ERROR).show();
+        } else Toast.makeText(this,"Original is already applied",Toast.LENGTH_LONG).show();
     }
 
-    private void addAlbumCovers() throws FileNotFoundException {
+    private void addAlbumCovers() {
 
-        TastyToast.makeText(this,"Scanning",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+        Toast.makeText(this,"Scanning",Toast.LENGTH_SHORT).show();
 
-        ContentResolver resolver = this.getContentResolver();
-
-        Cursor cursor = resolver.query(BASE_URI, BASE_PROJECTION, BASE_SELECTION, null, BASE_SORTORDER);
+        Cursor cursor = getContentResolver().query(BASE_URI, BASE_PROJECTION, BASE_SELECTION, null, BASE_SORTORDER);
         int count;
 
         if (cursor != null) {
@@ -97,43 +79,49 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             count = cursor.getCount();
 
             if (count > 0) while (cursor.moveToNext()) createImage(cursor);
-            else TastyToast.makeText(this,"Found Nothing",TastyToast.LENGTH_SHORT,TastyToast.ERROR).show();
+            else Toast.makeText(this,"Found Nothing",Toast.LENGTH_SHORT).show();
         }
     }
 
-    private void createImage(Cursor cursor) throws FileNotFoundException {
+    private void createImage(Cursor cursor) {
 
         final Long ALBUM_ID = cursor.getLong(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM_ID));
         final String ALBUM_NAME = cursor.getString(cursor.getColumnIndex(MediaStore.Audio.Media.ALBUM));
 
-        final Bitmap ALBUM_COVER = getAlbumCover(ALBUM_ID);
+        final Uri ALBUM_COVER = getAlbumCover(ALBUM_ID);
         final ImageView imageView = new ImageView(this);
 
-        // applying
-        imageView.setImageBitmap(ALBUM_COVER);
-        imageView.setOnClickListener(view -> {
-            TastyToast.makeText(this,"Changing",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
-            new Thread(() -> changeWallpaper(ALBUM_COVER)).start();
-        });
+        if (ALBUM_COVER != null) {
+            // applying
+            imageView.setImageURI(ALBUM_COVER);
+            imageView.setOnClickListener(view -> {
+                Toast.makeText(this, "Changing", Toast.LENGTH_SHORT).show();
+                new Thread(() -> changeWallpaper(uriToBitmap(ALBUM_COVER))).start();
+            });
 
-        // saving
-        imageView.setOnLongClickListener(view -> {
-            TastyToast.makeText(MainActivity.this,"Saving",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
-            new Thread(() -> saveCover(ALBUM_COVER,ALBUM_NAME)).start();
-            return true;
-        });
-
-        albums.addView(imageView);
+            // saving
+            imageView.setOnLongClickListener(view -> {
+                Toast.makeText(MainActivity.this, "Saving", Toast.LENGTH_SHORT).show();
+                new Thread(() -> saveCover(uriToBitmap(ALBUM_COVER), ALBUM_NAME)).start();
+                return true;
+            });
+            binding.albumView.addView(imageView);
+        }
     }
 
-    private Bitmap getAlbumCover(Long album_id) throws FileNotFoundException {
-
+    public Uri getAlbumCover(long albumId){
         Uri artworkUri = Uri.parse("content://media/external/audio/albumart");
-        Uri uri = ContentUris.withAppendedId(artworkUri, album_id);
-        ContentResolver resolver = MainActivity.this.getContentResolver();
-        InputStream inputStream = resolver.openInputStream(uri);
+        return ContentUris.withAppendedId(artworkUri, albumId);
+    }
 
-        return BitmapFactory.decodeStream(inputStream);
+    private Bitmap uriToBitmap(Uri uri) {
+        Bitmap bitmap = null;
+        try {
+            bitmap = MediaStore.Images.Media.getBitmap(getContentResolver() , uri);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return bitmap;
     }
 
     private void changeWallpaper(Bitmap bitmap) {
@@ -147,7 +135,7 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             e.printStackTrace();
         }
 
-        TastyToast.makeText(this,"Done",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+        Toast.makeText(this,"Done",Toast.LENGTH_SHORT).show();
 
         Looper.loop();
     }
@@ -178,38 +166,33 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
             fileOutputStream.close();
         } catch (Exception e) {
             e.printStackTrace();
-            TastyToast.makeText(this,e.getLocalizedMessage(),TastyToast.LENGTH_LONG,TastyToast.ERROR).show();
         }
 
-        TastyToast.makeText(this,"Done",TastyToast.LENGTH_SHORT,TastyToast.DEFAULT).show();
+        Toast.makeText(this,"Done",Toast.LENGTH_SHORT).show();
 
         Looper.loop();
     }
 
-    public void requestPermissions() throws FileNotFoundException {
+    public synchronized void requestWriteExternalPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { // android 11 and up
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE,
+                            Manifest.permission.MANAGE_EXTERNAL_STORAGE},
+                    1);
 
-        if (ContextCompat.checkSelfPermission(this,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                != PackageManager.PERMISSION_GRANTED) ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                PERMISSIONS_REQUEST_CODE);
-        else addAlbumCovers(); // granted
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == PERMISSIONS_REQUEST_CODE) {
-            if (grantResults.length > 0 // Granted
-                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                try {
-                    addAlbumCovers();
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-            } else System.exit(0); // Permission denied
+            if (!Environment.isExternalStorageManager()) { // all files
+                Toast.makeText(this, "Permission needed!", Toast.LENGTH_LONG).show();
+                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+                Uri uri = Uri.fromParts("package", getPackageName(), null);
+                intent.setData(uri);
+                startActivity(intent);
+            }
+        } else {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                            Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
         }
     }
 }
