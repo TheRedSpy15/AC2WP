@@ -3,22 +3,21 @@ package theredspy15.ac2wp;
 import android.Manifest;
 import android.app.WallpaperManager;
 import android.content.ContentUris;
-import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
@@ -57,11 +56,17 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
 
         binding.revertButton.setOnClickListener(this::revert);
 
-        requestWriteExternalPermission();
-        addAlbumCovers(); // TODO: move this!
+        loadAdData();
 
-        originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
+        if (checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestWriteExternalPermission();
+        } else {
+            originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
+            addAlbumCovers();
+        }
+    }
 
+    private void loadAdData() {
         String appId = "";
         if (BuildConfig.BUILD_TYPE.contentEquals("debug")) {
             appId = "ca-app-pub-3940256099942544/6300978111";
@@ -192,25 +197,20 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
     }
 
     public synchronized void requestWriteExternalPermission() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { // android 11 and up
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Manifest.permission.MANAGE_EXTERNAL_STORAGE},
-                    1);
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                1);
+    }
 
-            if (!Environment.isExternalStorageManager()) { // all files
-                Toast.makeText(this, "Permission needed!", Toast.LENGTH_LONG).show();
-                Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
-                Uri uri = Uri.fromParts("package", getPackageName(), null);
-                intent.setData(uri);
-                startActivity(intent);
-            }
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                            Manifest.permission.READ_EXTERNAL_STORAGE},
-                    1);
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == 1 &&
+                grantResults.length > 0 &&
+                grantResults[0] != PackageManager.PERMISSION_GRANTED) requestWriteExternalPermission();
+        else {
+            originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
+            addAlbumCovers();
         }
     }
 }
