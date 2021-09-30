@@ -22,6 +22,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -56,6 +61,19 @@ public class MainActivity extends AppCompatActivity implements ActivityCompat.On
         addAlbumCovers(); // TODO: move this!
 
         originalWallpaper = ((BitmapDrawable) getCurrentWallpaper()).getBitmap();
+
+        String appId = "";
+        if (BuildConfig.BUILD_TYPE.contentEquals("debug")) {
+            appId = "ca-app-pub-3940256099942544/6300978111";
+        } else appId = "ca-app-pub-5128547878021429~1004953500";
+
+        MobileAds.initialize(this, initializationStatus -> { });
+        AdRequest adRequest = new AdRequest.Builder().build();
+        AdView adView = new AdView(this);
+        adView.setAdSize(AdSize.BANNER);
+        adView.setAdUnitId("ca-app-pub-3940256099942544/6300978111");
+        binding.addLayout.addView(adView);
+        adView.loadAd(adRequest);
     }
 
     public void revert(View view) {
